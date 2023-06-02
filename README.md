@@ -1,2 +1,2 @@
-# EmeraldGreenR.github.io-
+# EmeraldGreenR.github.io
 DDLC web port
