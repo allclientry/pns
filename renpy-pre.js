@@ -24,8 +24,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-Module = window.Module || { };
-Module.preRun = Module.preRun || [ ];
+Module = window.Module || {};
+Module.preRun = Module.preRun || [];
 
 (function () {
 
@@ -141,7 +141,8 @@ Module.preRun = Module.preRun || [ ];
      */
     function printMessage(s) {
 
-        if (s.startsWith("warning: ") || s.startsWith("wasm streaming compile failed") || s.startsWith("falling back to ArrayBuffer") ) {
+        if (s.startsWith("warning: ") || s.startsWith("wasm streaming compile failed") || s.startsWith(
+                "falling back to ArrayBuffer")) {
             console.log(s);
             return;
         }
@@ -217,7 +218,9 @@ Module.preRun = Module.preRun || [ ];
 
     // Clear error when running without a server.
     if (location.href.startsWith('file://')) {
-        reportError("This browser requires the game to be run from a web server (i.e. double-clicking on index.html won't work).");
+        reportError(
+            "This browser requires the game to be run from a web server (i.e. double-clicking on index.html won't work)."
+        );
     }
 
 
@@ -246,9 +249,13 @@ Module.preRun = Module.preRun || [ ];
     }, false);
 
 
-    canvas.addEventListener('mouseenter', function (e) { window.focus() });
+    canvas.addEventListener('mouseenter', function (e) {
+        window.focus()
+    });
 
-    canvas.addEventListener('click', function (e) { window.focus() });
+    canvas.addEventListener('click', function (e) {
+        window.focus()
+    });
 
     Module.canvas = canvas;
 
@@ -284,6 +291,7 @@ Module.preRun = Module.preRun || [ ];
 
                 Module.removeRunDependency('initFs');
             });
+            initExplorer()
         } catch (e) {
             reportError("Could not create ~/.renpy/", e);
         }
@@ -364,7 +372,10 @@ Module.preRun = Module.preRun || [ ];
 
             while (true) {
 
-                let { done, value } = await reader.read();
+                let {
+                    done,
+                    value
+                } = await reader.read();
 
                 if (done) {
                     break;
@@ -444,16 +455,16 @@ Module.preRun = Module.preRun || [ ];
         // Convert script to base64 to prevent having to escape
         // the script content as a Python string
         const script_b64 = btoa(cur_cmd.py_script);
-        const wrapper = 'import base64, emscripten, json, traceback;\n'
-            + 'try:'
-            + "result = None;"
-            + "exec(base64.b64decode('" + script_b64 + "').decode('utf-8'));"
-            + "result = json.dumps(dict(data=result));"
-            + "\n"
-            + "except Exception as e:"
-            + "result = json.dumps(dict(error=str(e), name=e.__class__.__name__, traceback=traceback.format_exc()));"
-            + "\n"
-            + "emscripten.run_script('_renpy_cmd_callback(%s)' % (result,));";
+        const wrapper = 'import base64, emscripten, json, traceback;\n' +
+            'try:' +
+            "result = None;" +
+            "exec(base64.b64decode('" + script_b64 + "').decode('utf-8'));" +
+            "result = json.dumps(dict(data=result));" +
+            "\n" +
+            "except Exception as e:" +
+            "result = json.dumps(dict(error=str(e), name=e.__class__.__name__, traceback=traceback.format_exc()));" +
+            "\n" +
+            "emscripten.run_script('_renpy_cmd_callback(%s)' % (result,));";
 
         cmd_log(wrapper);
 
@@ -463,7 +474,11 @@ Module.preRun = Module.preRun || [ ];
 
     /** Add a command to the queue and execute it if the queue was empty. */
     function add_cmd(py_script, resolve, reject) {
-        const cmd = { py_script: py_script, resolve: resolve, reject: reject };
+        const cmd = {
+            py_script: py_script,
+            resolve: resolve,
+            reject: reject
+        };
         cmd_log('add_cmd', cmd);
         cmd_queue.push(cmd);
 
@@ -517,10 +532,10 @@ Module.preRun = Module.preRun || [ ];
         } else {
             // Using base64 as it is unclear if we can use the output
             // of JSON.stringify() directly as a Python string
-            script = 'import base64, json; '
-                + name + " = json.loads(base64.b64decode('"
-                + btoa(JSON.stringify(value))
-                + "').decode('utf-8')); result = True";
+            script = 'import base64, json; ' +
+                name + " = json.loads(base64.b64decode('" +
+                btoa(JSON.stringify(value)) +
+                "').decode('utf-8')); result = True";
         }
         return new Promise((resolve, reject) => {
             renpy_exec(script)
@@ -567,7 +582,8 @@ Module.preRun = Module.preRun || [ ];
                     if (err) {
                         console.trace();
                         console.log(err, err.message);
-                        printMessage("Warning: cannot import savegames: write error: " + err.message );
+                        printMessage("Warning: cannot import savegames: write error: " + err
+                            .message);
                     } else {
                         renpy_exec('renpy.loadsave.location.scan()').then(result => {
                             printMessage("Saves imported successfully.");
@@ -583,7 +599,8 @@ Module.preRun = Module.preRun || [ ];
             })
         }
         reader.readAsArrayBuffer(input.files[0])
-        input.type = ''; input.type = 'file'; // reset field
+        input.type = '';
+        input.type = 'file'; // reset field
     }
 
     window.onSavegamesImport = onSavegamesImport;
@@ -599,13 +616,177 @@ Module.preRun = Module.preRun || [ ];
 
     window.onSavegamesExport = onSavegamesExport;
 
+    function initExplorer() {
+        const fileListElement = document.getElementById('fileList');
+        const syncFromButton = document.getElementById('syncFrom');
+        const deleteModeButton = document.getElementById('deleteModeButton');
+        var currentPath = "/";
+        let deleteMode = false;
+    
+        function syncFromIndexedDB() {
+            FS.syncfs(true, (err) => {
+                if (err) {
+                    console.error('Error syncing from IndexedDB:', err);
+                } else {
+                    console.log('Synced from IndexedDB');
+                    listFiles('/');
+                }
+            });
+        }
+    
+        function listFiles(path) {
+            try {
+                const files = FS.readdir(path).filter((file) => file !== '.' && file !== '..');
+                fileListElement.innerHTML = '';
+                currentPath = path;
+    
+                files.forEach((file) => {
+                    const fullPath = `${path}${path.endsWith('/') ? '' : '/'}${file}`;
+                    const stat = FS.stat(fullPath);
+    
+                    const li = document.createElement('li');
+                    li.style.cursor = 'pointer';
+                    li.style.textDecoration = 'none';
+                    li.style.color = deleteMode ? 'red' : 'white';
+    
+                    if (FS.isDir(stat.mode)) {
+                        li.textContent = " - " + file;
+                        li.onclick = () => listFiles(fullPath);
+                    } else {
+                        li.textContent = " * " + file;
+                        li.onclick = () => {
+                            if (deleteMode) {
+                                deleteFile(fullPath);
+                            } else {
+                                openFileInNewTab(fullPath);
+                            }
+                        };
+                    }
+    
+                    fileListElement.appendChild(li);
+                });
+    
+                if (path !== '/') {
+                    const upLi = document.createElement('li');
+                    upLi.textContent = '..';
+                    upLi.style.fontStyle = 'italic';
+                    upLi.style.fontWeight = 'bold';
+                    upLi.style.cursor = 'pointer';
+                    upLi.style.textDecoration = 'none';
+                    upLi.style.color = 'white';     
+    
+                    upLi.onclick = () => listFiles(path.substring(0, path.lastIndexOf('/')) || '/');
+                    fileListElement.prepend(upLi);
+                }
+    
+                if (files.length === 0) {
+                    fileListElement.innerHTML = '<li>No files found</li>';
+                }
+            } catch (err) {
+                console.error('Error reading directory:', err);
+            }
+        }
+    
+        function openFileInNewTab(filepath) {
+            try {
+                const content = FS.readFile(filepath, { encoding: 'utf8' });
+                const newTab = window.open('', '_blank');
+    
+                if (newTab) {
+                    if (filepath.endsWith('.html') || filepath.endsWith('.htm')) {
+                        // Render raw content for HTML files
+                        newTab.document.open();
+                        newTab.document.write(content);
+                        newTab.document.close();
+                    } else {
+                        newTab.document.open();
+                        newTab.document.write(`
+                            <html>
+                                <head>
+                                    <title>${filepath}</title>
+                                    <style>
+                                        body {
+                                            font-family: Arial, sans-serif;
+                                            margin: 20px;
+                                        }
+                                        p {
+                                            font-size: 2rem;
+                                            white-space: pre-wrap;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <p>${escapeHtml(content)}</p>
+                                </body>
+                            </html>
+                        `);
+                        newTab.document.close();
+                    }
+                    newTab.document.title = filepath;
+                } else {
+                    alert('Unable to open new tab. Please allow pop-ups for this site.');
+                }
+            } catch (err) {
+                console.error('Error reading file:', err.message);
+                alert('Error reading file: ' + err.message);
+            }
+        }
+    
+        function deleteFile(filepath) {
+            if (confirm(`Are you sure you want to delete ${filepath}?`)) {
+                try {
+                    FS.unlink(filepath); // Delete the file
+                    console.log(`${filepath} deleted successfully.`);
+                    listFiles('/'); // Refresh the file list
+                } catch (err) {
+                    console.error('Error deleting file:', err);
+                    alert('Error deleting file: ' + err.message);
+                }
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    
+        deleteModeButton.onclick = () => {
+            deleteMode = !deleteMode;
+            deleteModeButton.textContent = deleteMode ? 'Exit Delete Mode' : 'Toggle Delete Mode';
+            listFiles(currentPath);
+        };
+    
+        syncFromButton.onclick = syncFromIndexedDB;
+    
+        syncFromIndexedDB();
+    }
+    
+
+    function toggleExplorer() {
+        var element = document.getElementById("filesystem");
+        if (element.classList.contains("hidden")) {
+            element.classList.remove("hidden");
+            element.classList.add("visible");
+        } else {
+            element.classList.add("hidden");
+            element.classList.remove("visible");
+        }
+    }
+
+    window.showFileSystem = toggleExplorer;
+
     function FSDownload(filename, mimetype) {
         console.log('download', filename);
         var a = document.createElement('a');
         a.download = filename.replace(/.*\//, '');
         try {
-            a.href = window.URL.createObjectURL(new Blob([FS.readFile(filename)],
-                { type: mimetype || '' }));
+            a.href = window.URL.createObjectURL(new Blob([FS.readFile(filename)], {
+                type: mimetype || ''
+            }));
         } catch (e) {
             Module.print("Error opening " + filename + "\n");
             return;
@@ -647,7 +828,9 @@ Module.preRun = Module.preRun || [ ];
                 cachedCatalog = await cachedCatalogResponse.json();
             } catch (e) {
                 console.log("No cached catalog found.");
-                cachedCatalog = { version: -1 };
+                cachedCatalog = {
+                    version: -1
+                };
             }
 
             if (cachedCatalog.version == catalog.version) {
@@ -709,18 +892,38 @@ Module.preRun = Module.preRun || [ ];
 
     inputForm.addEventListener("submit", submitInput);
 
-    inputDiv.addEventListener("keydown", function (e) { e.stopPropagation(); });
-    inputDiv.addEventListener("keyup", function (e) { e.stopPropagation(); });
-    inputDiv.addEventListener("keypress", function (e) { e.stopPropagation(); });
+    inputDiv.addEventListener("keydown", function (e) {
+        e.stopPropagation();
+    });
+    inputDiv.addEventListener("keyup", function (e) {
+        e.stopPropagation();
+    });
+    inputDiv.addEventListener("keypress", function (e) {
+        e.stopPropagation();
+    });
 
-    inputDiv.addEventListener("mousemove", function (e) { e.stopPropagation(); });
-    inputDiv.addEventListener("mousedown", function (e) { e.stopPropagation(); });
-    inputDiv.addEventListener("mouseup", function (e) { e.stopPropagation(); });
+    inputDiv.addEventListener("mousemove", function (e) {
+        e.stopPropagation();
+    });
+    inputDiv.addEventListener("mousedown", function (e) {
+        e.stopPropagation();
+    });
+    inputDiv.addEventListener("mouseup", function (e) {
+        e.stopPropagation();
+    });
 
-    inputDiv.addEventListener("touchstart", function (e) { e.stopPropagation(); });
-    inputDiv.addEventListener("touchend", function (e) { e.stopPropagation(); });
-    inputDiv.addEventListener("touchcancel", function (e) { e.stopPropagation(); });
-    inputDiv.addEventListener("touchmove", function (e) { e.stopPropagation(); });
+    inputDiv.addEventListener("touchstart", function (e) {
+        e.stopPropagation();
+    });
+    inputDiv.addEventListener("touchend", function (e) {
+        e.stopPropagation();
+    });
+    inputDiv.addEventListener("touchcancel", function (e) {
+        e.stopPropagation();
+    });
+    inputDiv.addEventListener("touchmove", function (e) {
+        e.stopPropagation();
+    });
 
     let inputAllow = null;
     let inputExclude = null;
@@ -743,7 +946,7 @@ Module.preRun = Module.preRun || [ ];
         if (newValue != inputText.value) {
             let end = inputText.selectionEnd;
             inputText.value = newValue;
-            inputText.setSelectionRange(end-1, end-1);
+            inputText.setSelectionRange(end - 1, end - 1);
         }
     });
 
@@ -789,7 +992,7 @@ Module.preRun = Module.preRun || [ ];
      ***************************************************************************/
 
     let fetchId = 1;
-    let fetchResult = { };
+    let fetchResult = {};
 
     /**
      * Fetch a file from the server.
@@ -811,10 +1014,14 @@ Module.preRun = Module.preRun || [ ];
 
                 let content = ''
 
-                let options = { method: method };
+                let options = {
+                    method: method
+                };
 
                 if (inFile) {
-                    options.body = FS.readFile(inFile, { encoding: 'binary' });
+                    options.body = FS.readFile(inFile, {
+                        encoding: 'binary'
+                    });
                 }
 
                 let response = await fetch(url, options);
@@ -826,7 +1033,7 @@ Module.preRun = Module.preRun || [ ];
                     }
 
                     fetchResult[id] = "OK " + response.status + " " + response.statusText;
-                } else{
+                } else {
                     fetchResult[id] = "ERROR " + response.status + " " + response.statusText;
                 }
 
@@ -845,7 +1052,7 @@ Module.preRun = Module.preRun || [ ];
     function fetchFileResult(id) {
         let result = fetchResult[id];
 
-        if (! result.startsWith("PENDING")) {
+        if (!result.startsWith("PENDING")) {
             delete fetchResult[id];
         }
 
