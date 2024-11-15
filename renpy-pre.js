@@ -253,7 +253,6 @@ Module.preRun = Module.preRun || [ ];
     Module.canvas = canvas;
 
     window.presplashEnd = () => {
-        document.getElementById('presplash').remove();
         cancelStatusTimeout();
         hideStatus();
     };

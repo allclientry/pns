@@ -1,0 +1,14 @@
+{
+  "name": "ddlc-web",
+  "version": "1.0.0",
+  "description": "ddlc on the web, via renpy emulation?",
+  "main": "renpy-pre.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1"
+  }
+}
