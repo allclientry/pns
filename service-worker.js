@@ -26,7 +26,6 @@ async function fetchAndCache(request) {
     const cache = await caches.open(cacheName);
     const cachedResponse = await cache.match(request);
 
-
     try {
 
         if (request.url.endsWith("?cached")) {

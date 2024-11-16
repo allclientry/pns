@@ -11,7 +11,6 @@ DDLC was honestly pretty easy to port to Web/HTML5 since in the more recent Ren'
 Also not sure if this is TOS, but I don't think anyone really cares that much anymore. By all means though, if anyone anyone at Team Salvato wants me to take this down, feel free to let me know and it will be done.
 
 ## TODO: 
-- enable character.chr file usage. As things are right now, I don't believe it is possible to get past Act 3 due to not being able to edit chr files like you would in the base game. Already have some ideas for how this could be solved, so I'll probably attempt to implement that sometime in the future.
 - forgot to add mod disclaimer, so I guess I'll just add it here for now: 
 
 This is a Doki Doki Literature Club fan game that is not affiliated with Team Salvato. It is designed to be played only after the official game has been completed. You can download Doki Doki Literature Club at: http://ddlc.moe
