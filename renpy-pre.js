@@ -620,8 +620,9 @@ Module.preRun = Module.preRun || [];
         const fileListElement = document.getElementById('fileList');
         const syncFromButton = document.getElementById('syncFrom');
         const deleteModeButton = document.getElementById('deleteModeButton');
-        var currentPath = "/";
         let deleteMode = false;
+    
+        const fileElements = new Map(); // Keep track of file list elements
     
         function syncFromIndexedDB() {
             FS.syncfs(true, (err) => {
@@ -638,7 +639,7 @@ Module.preRun = Module.preRun || [];
             try {
                 const files = FS.readdir(path).filter((file) => file !== '.' && file !== '..');
                 fileListElement.innerHTML = '';
-                currentPath = path;
+                fileElements.clear(); // Clear the map
     
                 files.forEach((file) => {
                     const fullPath = `${path}${path.endsWith('/') ? '' : '/'}${file}`;
@@ -664,6 +665,7 @@ Module.preRun = Module.preRun || [];
                     }
     
                     fileListElement.appendChild(li);
+                    fileElements.set(fullPath, li); // Save the element
                 });
     
                 if (path !== '/') {
@@ -673,7 +675,7 @@ Module.preRun = Module.preRun || [];
                     upLi.style.fontWeight = 'bold';
                     upLi.style.cursor = 'pointer';
                     upLi.style.textDecoration = 'none';
-                    upLi.style.color = 'white';     
+                    upLi.style.color = 'white';
     
                     upLi.onclick = () => listFiles(path.substring(0, path.lastIndexOf('/')) || '/');
                     fileListElement.prepend(upLi);
@@ -687,6 +689,12 @@ Module.preRun = Module.preRun || [];
             }
         }
     
+        function toggleDeleteModeStyles() {
+            fileElements.forEach((li) => {
+                li.style.color = deleteMode ? 'red' : 'white';
+            });
+        }
+    
         function openFileInNewTab(filepath) {
             try {
                 const content = FS.readFile(filepath, { encoding: 'utf8' });
@@ -694,7 +702,6 @@ Module.preRun = Module.preRun || [];
     
                 if (newTab) {
                     if (filepath.endsWith('.html') || filepath.endsWith('.htm')) {
-                        // Render raw content for HTML files
                         newTab.document.open();
                         newTab.document.write(content);
                         newTab.document.close();
@@ -735,16 +742,17 @@ Module.preRun = Module.preRun || [];
         function deleteFile(filepath) {
             if (confirm(`Are you sure you want to delete ${filepath}?`)) {
                 try {
-                    FS.unlink(filepath); // Delete the file
+                    FS.unlink(filepath);
                     console.log(`${filepath} deleted successfully.`);
-                    listFiles('/'); // Refresh the file list
+                    fileElements.get(filepath)?.remove(); // Remove the file's element
+                    fileElements.delete(filepath); // Delete the reference
                 } catch (err) {
                     console.error('Error deleting file:', err);
                     alert('Error deleting file: ' + err.message);
                 }
             }
         }
-
+    
         function escapeHtml(unsafe) {
             return unsafe
                 .replace(/&/g, '&amp;')
@@ -757,13 +765,14 @@ Module.preRun = Module.preRun || [];
         deleteModeButton.onclick = () => {
             deleteMode = !deleteMode;
             deleteModeButton.textContent = deleteMode ? 'Exit Delete Mode' : 'Toggle Delete Mode';
-            listFiles(currentPath);
+            toggleDeleteModeStyles(); // Update styles directly
         };
     
         syncFromButton.onclick = syncFromIndexedDB;
     
         syncFromIndexedDB();
     }
+    
     
 
     function toggleExplorer() {

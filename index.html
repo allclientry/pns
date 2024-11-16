@@ -4,25 +4,10 @@
     <head>
         <meta charset=utf-8>
         <meta content="text/html; charset=utf-8" http-equiv=Content-Type>
-        <title>Doki Doki Literature Club! (Ren'Py Mod)</title>
+        <title>Doki Doki Literature Club!</title>
         <meta content="width=device-width,initial-scale=1" name=viewport>
         <link href=manifest.json rel=manifest>
-        <link href=icons/icon-72x72.png rel=icon sizes=72x72 type=image/png>
-        <link href=icons/icon-96x96.png rel=icon sizes=96x96 type=image/png>
-        <link href=icons/icon-128x128.png rel=icon sizes=128x128 type=image/png>
-        <link href=icons/icon-144x144.png rel=icon sizes=144x144 type=image/png>
-        <link href=icons/icon-152x152.png rel=icon sizes=152x152 type=image/png>
-        <link href=icons/icon-192x192.png rel=icon sizes=192x192 type=image/png>
-        <link href=icons/icon-384x384.png rel=icon sizes=384x384 type=image/png>
-        <link href=icons/icon-512x512.png rel=icon sizes=512x512 type=image/png>
-        <link href=icons/icon-72x72.png rel=apple-touch-icon sizes=72x72 type=image/png>
-        <link href=icons/icon-96x96.png rel=apple-touch-icon sizes=96x96 type=image/png>
-        <link href=icons/icon-128x128.png rel=apple-touch-icon sizes=128x128 type=image/png>
-        <link href=icons/icon-144x144.png rel=apple-touch-icon sizes=144x144 type=image/png>
-        <link href=icons/icon-152x152.png rel=apple-touch-icon sizes=152x152 type=image/png>
-        <link href=icons/icon-192x192.png rel=apple-touch-icon sizes=192x192 type=image/png>
-        <link href=icons/icon-384x384.png rel=apple-touch-icon sizes=384x384 type=image/png>
-        <link href=icons/icon-512x512.png rel=apple-touch-icon sizes=512x512 type=image/png>
+        <link href=icons/web-icon.png rel=icon sizes=128x128 type=image/png>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -193,8 +178,20 @@
             }
             .disclaimer {
                 font-size: .75rem; /* Large text size */
+                max-width: 50%;
                 color: white;
                 text-align: center;
+            }
+            .flex-centered {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .absolute-center {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
             }
 
             h1, h2, p {
@@ -224,13 +221,28 @@
                 z-index: 99;
                 background: #444;
             }
+            #intro-text {
+                max-width: 90%;
+            }
         </style>
     </head>
 
     <body>
         <canvas class=hidden id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
-        <h1 class="largest-text">Click anywhere to initialize game.</h1>
-        <p class="disclaimer">DDLC is NOT our property in anyway and shall all the rights of the presented IP belong to Team Salvato. This content knowingly violates Team Salvato's official IP guidelines, though we do not condone any further violation of such guidelines. Sorry not sorry.</p>
+        <div id="filesystem" class="hidden absolute-center">
+            <div style="margin: 2%;">
+                <h1 style="text-align: center;">IDBFS Explorer</h1>
+                <div style="display: flex; flex-direction: row;">
+                    <button id="syncFrom">Refresh (Sync)</button>
+                    <button id="deleteModeButton">Toggle Delete Mode</button>
+                </div>
+                <ul id="fileList" style="max-width: 80vh; max-height: 50vh; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></ul>
+            </div>
+        </div>
+        <div class="flex-centered" id="intro-text">
+            <h1 class="largest-text">Click anywhere to initialize game.</h1>
+            <p class="disclaimer">DDLC is NOT our property in anyway and shall all the rights of the presented IP belong to Team Salvato. This content knowingly violates Team Salvato's official IP guidelines, though we do not condone any further violation of such guidelines. Sorry not sorry.</p>
+        </div>
         <div id=ContextContainer><a id=ContextButton>≡</a><br>
             <div id=ContextMenu style=display:none>
                 <input id=ID_SavegamesImport accept=application/zip onchange=onSavegamesImport(this) style=display:none type=file>
@@ -241,12 +253,7 @@
                 <p style="text-align: center;">Powered by Ren'Py.</p>
             </div>
         </div>
-        <div id="filesystem" class="hidden">
-            <h1>IDBFS Explorer</h1>
-            <button id="syncFrom">Sync From IndexedDB (Refresh)</button>
-            <button id="deleteModeButton">Toggle Delete Mode</button>
-            <ul id="fileList"></ul>
-        </div>        
+
         <div id=statusDiv class=hidden>
             <div id=statusTextDiv></div><progress id=statusProgress max=100 value=0></progress>
         </div>
